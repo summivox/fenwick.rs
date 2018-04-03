@@ -1,15 +1,13 @@
 use std::ops::AddAssign;
-use lowbit::lowbit;
 
-pub fn add<T>(fenwick: &mut [T], i: usize, delta: T)
+use index_iter::zero_based::{down as seq_dn, up as seq_up};
+
+pub fn update<T>(fenwick: &mut [T], i: usize, delta: T)
 where
-    T: AddAssign + Copy,
+    T: AddAssign + Copy + Default,
 {
-    let n = fenwick.len();
-    let mut ii = i + 1;
-    while ii <= n {
-        fenwick[ii - 1] += delta;
-        ii += lowbit(ii);
+    for ii in seq_up(i, fenwick.len()) {
+        fenwick[ii] += delta;
     }
 }
 
@@ -18,10 +16,8 @@ where
     T: AddAssign + Copy + Default,
 {
     let mut ret = T::default();
-    let mut ii = i + 1;
-    while ii != 0 {
-        ret += fenwick[ii - 1];
-        ii -= lowbit(ii);
+    for ii in seq_dn(i) {
+        ret += fenwick[ii];
     }
     ret
 }
@@ -39,6 +35,13 @@ mod tests {
         Some(*s)
     }
 
+    #[test]
+    fn randoms() {
+        let mut rng = thread_rng();
+        for len in 0..130usize {
+            random_one(&mut rng, len);
+        }
+    }
     fn random_one<TRng: Rng>(rng: &mut TRng, len: usize) {
         let mut data = vec![0i32; len];
         let range = Range::new_inclusive(-50, 50);
@@ -48,18 +51,10 @@ mod tests {
         let psum: Vec<i32> = data.iter().scan(0i32, partial_sum_scanner).collect();
         let mut fenwick = vec![0i32; data.len()];
         for (i, x) in data.iter().enumerate() {
-            super::add(&mut fenwick[..], i, *x);
+            super::update(&mut fenwick[..], i, *x);
         }
         for (i, s) in psum.iter().enumerate() {
             assert_eq!(super::partial_sum(&fenwick[..], i), *s);
-        }
-    }
-
-    #[test]
-    fn randoms() {
-        let mut rng = thread_rng();
-        for len in 0..130usize {
-            random_one(&mut rng, len);
         }
     }
 }
