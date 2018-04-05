@@ -2,6 +2,10 @@
 name = "fenwick"
 version = "0.1.0"
 authors = ["summivox <summivox@gmail.com>"]
+license = "MIT"
+
+keywords = ["data structure", "binary indexed tree", "bit indexed tree", "prefix sum", "partial sum"]
+categories = ["algorithms", "data-structures", "science"]
 
 [dependencies]
 num-traits = "0.2"

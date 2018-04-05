@@ -1,3 +1,52 @@
+//! Functions and iterators that generates the index sequences for traversing Fenwick trees.
+//!
+//! # The sequences
+//!
+//! - "Down" sequence
+//!
+//! # {Zero, One}-based indexing
+//!
+//! Traditionally Fenwick trees are implemented using one-based arrays for both tree and value
+//! arrays. While this simplifies the definition of index sequences, an offset is required for it
+//! to work in languages (such as rust) that has zero-based array indexing.
+//!
+//! Both [zero-based](zero_based) and [one-based](one_based) index sequences are included.
+//!
+//! # Examples
+//!
+//! An ad-hoc 3D Fenwick tree over a 3D array may be implemented as follows:
+//!
+//! ```rust
+//! use fenwick::index_iter::zero_based::{down, up};
+//!
+//! // dummy zero-based 3D array interface
+//! const MAX: usize = 100;
+//! fn get(i: usize, j: usize, k: usize) -> i32 { 1 /* dummy */ }
+//! fn add_assign(i: usize, j: usize, k: usize, delta: i32) { /* dummy */ }
+//!
+//! // fenwick tree impl
+//! fn update(i: usize, j: usize, k: usize, delta: i32) {
+//!     for ii in up(i, MAX) {
+//!         for jj in up(j, MAX) {
+//!             for kk in up(k, MAX) {
+//!                 add_assign(ii, jj, kk, delta);
+//!             }
+//!         }
+//!     }
+//! }
+//! fn prefix_sum(i: usize, j: usize, k: usize, delta: i32) {
+//!     let mut ret = 0i32;
+//!     for ii in down(i) {
+//!         for jj in down(j) {
+//!             for kk in down(k) {
+//!                 ret += get(ii, jj, kk);
+//!             }
+//!         }
+//!     }
+//! }
+//! ```
+//!
+
 pub mod one_based {
     #[inline]
     pub fn next_down(x: usize) -> usize {
