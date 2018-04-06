@@ -7,7 +7,7 @@ use num_traits::{PrimInt, Unsigned, WrappingAdd};
 ///
 /// # Examples
 ///
-/// ```rust
+/// ```
 /// use fenwick::lowbit;
 /// assert_eq!(lowbit(0u64), 0u64);
 /// assert_eq!(lowbit(0x80000000u32), 0x80000000u32);

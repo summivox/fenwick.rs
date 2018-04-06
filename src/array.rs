@@ -1,29 +1,30 @@
-//! Functions implementing a 1D Fenwick tree stored in a borrowed array/slice (zero-based).
-//!
-//! See
+//! Operations on a 1D Fenwick tree stored in a zero-based array/slice (zero-based).
 //!
 //! # Examples
 //!
-//! ```rust
+//! ```
 //! use fenwick::array::{update, prefix_sum};
 //!
-//! let fw = &mut [0i32; 10];
+//! let fw = &mut [0i32; 10]; // backing array of Fenwick tree (NOT original array!)
 //! assert_eq!(prefix_sum(fw, 0), 0);
 //! assert_eq!(prefix_sum(fw, 9), 0);
-//! update(fw, 0, 3);
+//! update(fw, 0, 3); // original array: [3, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 //! assert_eq!(prefix_sum(fw, 0), 3);
 //! assert_eq!(prefix_sum(fw, 9), 3);
-//! update(fw, 5, 9);
+//! update(fw, 5, 9); // original array: [3, 0, 0, 0, 0, 9, 0, 0, 0, 0]
 //! assert_eq!(prefix_sum(fw, 4), 3);
 //! assert_eq!(prefix_sum(fw, 5), 12);
 //! assert_eq!(prefix_sum(fw, 6), 12);
-//! update(fw, 4, -5);
+//! update(fw, 4, -5); // original array: [3, 0, 0, 0, -5, 9, 0, 0, 0, 0]
 //! assert_eq!(prefix_sum(fw, 4), -2);
 //! assert_eq!(prefix_sum(fw, 5), 7);
+//! update(fw, 0, -2); // original array: [1, 0, 0, 0, -5, 9, 0, 0, 0, 0]
+//! assert_eq!(prefix_sum(fw, 4), -4);
+//! assert_eq!(prefix_sum(fw, 5), 5);
 //! ```
 //!
 
-use std::ops::{AddAssign, Index};
+use std::ops::AddAssign;
 
 use index::zero_based::{down as seq_dn, up as seq_up};
 
@@ -31,22 +32,22 @@ use index::zero_based::{down as seq_dn, up as seq_up};
 ///
 /// Conceptually performs `a[i] += delta` on the original array `a`.
 ///
+/// # Panics
+///
+/// Panics if `fenwick[i]` is out of bound.
+///
 /// # Examples
 ///
 /// See [module-level example](self).
 ///
-/// # Panics
-///
-/// Out-of-bound access if input index `i` is out of bound.
-///
 pub fn update<TValue, TArray>(fenwick: &mut TArray, i: usize, delta: TValue)
 where
     TValue: AddAssign + Copy + Default,
-    TArray: AsMut<[TValue]> + ?Sized
+    TArray: AsMut<[TValue]> + ?Sized,
 {
-    let a = fenwick.as_mut();
-    for ii in seq_up(i, a.len()) {
-        a[ii] += delta;
+    let fenwick = fenwick.as_mut();
+    for ii in seq_up(i, fenwick.len()) {
+        fenwick[ii] += delta;
     }
 }
 
@@ -55,24 +56,25 @@ where
 ///
 /// Conceptually calculates `a[0] + ... + a[i]` on the original array `a`.
 ///
+/// # Panics
+///
+/// Panics if `fenwick[i]` is out of bound.
+///
 /// # Examples
 ///
 /// See [module-level example](self).
 ///
-/// # Panics
-///
-/// Out-of-bound access if input index `i` is out of bound.
-///
 pub fn prefix_sum<TValue, TArray>(fenwick: &TArray, i: usize) -> TValue
 where
     TValue: AddAssign + Copy + Default,
-    TArray: Index<usize, Output=TValue> + ?Sized,
+    TArray: AsRef<[TValue]> + ?Sized,
 {
-    let mut ret = TValue::default();
+    let fenwick = fenwick.as_ref();
+    let mut sum = TValue::default();
     for ii in seq_dn(i) {
-        ret += fenwick[ii];
+        sum += fenwick[ii];
     }
-    ret
+    sum
 }
 
 #[cfg(test)]

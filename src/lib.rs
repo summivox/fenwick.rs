@@ -33,8 +33,7 @@
 //! # References
 //!
 //! * [Original Paper](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.14.8917)
-//! * [Tutorial on Topcoer](https://www.topcoder.com/community/data-science/data-science-tutorials/binary-indexed-trees/)
-//! *
+//! * [Tutorial on Topcoder](https://www.topcoder.com/community/data-science/data-science-tutorials/binary-indexed-trees/)
 //!
 
 extern crate num_traits;
