@@ -36,13 +36,8 @@
 //! * [Tutorial on Topcoder](https://www.topcoder.com/community/data-science/data-science-tutorials/binary-indexed-trees/)
 //!
 
-extern crate num_traits;
-
 #[cfg(test)]
 extern crate rand;
-
-mod lowbit;
-pub use lowbit::lowbit;
 
 pub mod index;
 
