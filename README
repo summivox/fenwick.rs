@@ -7,6 +7,8 @@ that supports the following two operations efficiently over an array of numbers 
 With a naïve implementation, only one of the operations can be made to have constant time
 complexity while the other one has to be linear. With Fenwick tree, both take only `O(log(N))`.
 
+[wiki]: https://en.wikipedia.org/wiki/Fenwick_tree
+
 # Examples
 
 <!-- REMEMBER TO UPDATE THIS FROM `src/array.rs` -->
