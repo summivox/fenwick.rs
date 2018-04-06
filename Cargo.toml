@@ -1,14 +1,15 @@
 [package]
 name = "fenwick"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["summivox <summivox@gmail.com>"]
-license = "MIT"
 
 description = "Fenwick tree: data structure that efficiently calculates prefix sums in a changing array of numbers."
 repository = "https://github.com/summivox/fenwick.rs"
-
-keywords = ["bit", "binary", "tree", "prefix", "sum"]
+readme = "README"
+keywords = ["binary", "tree", "array", "prefix", "sum"]
 categories = ["algorithms", "data-structures", "science"]
+license = "MIT"
+license-file = "LICENSE"
 
 [dependencies]
 

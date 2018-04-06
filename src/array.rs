@@ -24,6 +24,8 @@
 //! ```
 //!
 
+// NOTE: example above used in `README`
+
 use std::ops::AddAssign;
 
 use index::zero_based::{down as seq_dn, up as seq_up};
