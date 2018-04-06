@@ -1,69 +1,81 @@
-//! Functions and iterators that generates the index sequences for traversing Fenwick trees.
+//! Iterators yielding index sequences for traversing Fenwick trees.
 //!
-//! # The sequences
-//!
-//! - "Down" sequence
-//!
-//! # {Zero, One}-based indexing
+//! - `down(i)` yields indices of nodes which can be summed together to obtain prefix sum up to `i`.
+//! - `up(i, limit)` yields indices of nodes that should be updated when updating element `i`.
 //!
 //! Traditionally Fenwick trees are implemented using one-based arrays for both tree and value
 //! arrays. While this simplifies the definition of index sequences, an offset is required for it
-//! to work in languages (such as rust) that has zero-based array indexing.
+//! to work in languages (such as rust) that has zero-based array indexing. Alternatively, the
+//! algorithms can be simplified to directly work with zero-based indices.
 //!
-//! Both [zero-based](zero_based) and [one-based](one_based) index sequences are included.
+//! This module implements both [zero-based](zero_based) and [one-based](one_based) index sequences.
 //!
 //! # Examples
 //!
 //! An ad-hoc 3D Fenwick tree over a 3D array may be implemented as follows:
 //!
-//! ```rust
-//! use fenwick::index_iter::zero_based::{down, up};
+//! ```
+//! use fenwick::index::zero_based::{down, up};
+//! #
+//! # // dummy zero-based 3D array interface
+//! # const MAX: usize = 100;
+//! # fn array3d_get(i: usize, j: usize, k: usize) -> i32 { 1 /* dummy */ }
+//! # fn array3d_add_assign(i: usize, j: usize, k: usize, delta: i32) { /* dummy */ }
 //!
-//! // dummy zero-based 3D array interface
-//! const MAX: usize = 100;
-//! fn get(i: usize, j: usize, k: usize) -> i32 { 1 /* dummy */ }
-//! fn add_assign(i: usize, j: usize, k: usize, delta: i32) { /* dummy */ }
-//!
-//! // fenwick tree impl
 //! fn update(i: usize, j: usize, k: usize, delta: i32) {
 //!     for ii in up(i, MAX) {
 //!         for jj in up(j, MAX) {
 //!             for kk in up(k, MAX) {
-//!                 add_assign(ii, jj, kk, delta);
+//!                 array3d_add_assign(ii, jj, kk, delta);
 //!             }
 //!         }
 //!     }
 //! }
-//! fn prefix_sum(i: usize, j: usize, k: usize, delta: i32) {
-//!     let mut ret = 0i32;
+//!
+//! fn prefix_sum(i: usize, j: usize, k: usize) -> i32 {
+//!     let mut sum = 0i32;
 //!     for ii in down(i) {
 //!         for jj in down(j) {
 //!             for kk in down(k) {
-//!                 ret += get(ii, jj, kk);
+//!                 sum += array3d_get(ii, jj, kk);
 //!             }
 //!         }
 //!     }
+//!     sum
 //! }
 //! ```
 //!
 
 pub mod one_based {
-    #[inline]
-    pub fn next_down(x: usize) -> usize {
-        x & x.wrapping_sub(1)
-    }
+    /// Creates an iterator that yields indices of nodes that make up the prefix sum up to `init`
+    /// in a one-based Fenwick tree.
+    ///
+    /// Each output index `i` satisfies `1 <= i && i <= init` .
+    ///
+    /// # Panics
+    ///
+    /// Panics when `init` is zero (invalid for one-based indexing).
+    ///
+    /// # Examples
+    ///
+    /// See [module-level example](super).
+    ///
     pub fn down(init: usize) -> Down {
+        assert!(1 <= init);
         Down(init)
     }
+
+    /// Iterator created by [`down(init)`](down)
+    #[derive(Debug, Clone)]
     pub struct Down(usize);
     impl Iterator for Down {
         type Item = usize;
 
         fn next(&mut self) -> Option<usize> {
-            let x = self.0;
-            if x != 0 {
-                self.0 = next_down(x);
-                Some(x)
+            let i = self.0;
+            if i != 0 {
+                self.0 = next_down(i);
+                Some(i)
             } else {
                 None
             }
@@ -71,15 +83,39 @@ pub mod one_based {
     }
 
     #[inline]
-    pub fn next_up(x: usize) -> usize {
-        (x | x.wrapping_sub(1)).wrapping_add(1)
+    fn next_down(i: usize) -> usize {
+        i & i.wrapping_sub(1)
     }
+
+    /// Creates an iterator that yields indices of nodes that need to be updated when updating an
+    /// element in the original array in a one-based Fenwick tree with `limit_inclusive` elements.
+    ///
+    /// Each output index `i` satisfies `init <= i && i <= limit_inclusive` .
+    ///
+    /// # Panics
+    ///
+    /// Panics if the following assumption on input indices does not hold:
+    /// `1 <= init && init <= limit_inclusive && limit_inclusive <= (usize::max_value() >> 1)` .
+    ///
+    /// Note that the upper bound on `limit_inclusive` is irrelevant in practice since it is the
+    /// length of the backing array of the Fenwick tree and therefore limited by memory.
+    ///
+    /// # Examples
+    ///
+    /// See [module-level example](super).
+    ///
     pub fn up(init: usize, limit_inclusive: usize) -> Up {
+        assert!(1 <= init);
+        assert!(init <= limit_inclusive);
+        assert!(limit_inclusive <= (usize::max_value() >> 1));
         Up {
             curr: init,
             limit_inclusive,
         }
     }
+
+    /// Iterator created by [`up(init, limit)`](up)
+    #[derive(Debug, Clone)]
     pub struct Up {
         curr: usize,
         limit_inclusive: usize,
@@ -88,58 +124,55 @@ pub mod one_based {
         type Item = usize;
 
         fn next(&mut self) -> Option<usize> {
-            let x = self.curr;
-            if x <= self.limit_inclusive {
-                self.curr = next_up(x);
-                Some(x)
+            let i = self.curr;
+            if i <= self.limit_inclusive {
+                self.curr = next_up(i);
+                Some(i)
             } else {
                 None
             }
         }
     }
 
-    #[cfg(test)]
-    mod tests {
-        use super::{down, up};
-
-        #[test]
-        fn down_boundary() {
-            assert_eq!(down(0).collect::<Vec<usize>>(), vec![]);
-            assert_eq!(down(1).collect::<Vec<usize>>(), vec![1usize]);
-        }
-
-        #[test]
-        fn up_boundary() {
-            assert_eq!(
-                up(1usize, 0b100usize).collect::<Vec<usize>>(),
-                vec![0b1usize, 0b10usize, 0b100usize]
-            );
-            assert_eq!(
-                up(0b100usize, 0b100usize).collect::<Vec<usize>>(),
-                vec![0b100usize]
-            );
-            assert_eq!(up(0b111usize, 0b100usize).collect::<Vec<usize>>(), vec![]);
-        }
+    #[inline]
+    fn next_up(i: usize) -> usize {
+        (i | i.wrapping_sub(1)) + 1
     }
 }
 
 pub mod zero_based {
-    #[inline]
-    pub fn next_down(x: usize) -> usize {
-        (x & x.wrapping_add(1)).wrapping_sub(1)
-    }
+    /// Creates an iterator that yields indices of nodes that make up the prefix sum up to `init`
+    /// in a zero-based Fenwick tree.
+    ///
+    /// Each output index `i` satisfies `i <= init` .
+    ///
+    /// # Panics
+    ///
+    /// Panics when `i == usize::max_value()` .
+    ///
+    /// Note that this is irrelevant in practice since `i` is bound by the length of the backing
+    /// array of the Fenwick tree and therefore limited by memory.
+    ///
+    /// # Examples
+    ///
+    /// See [module-level example](super).
+    ///
     pub fn down(init: usize) -> Down {
+        assert_ne!(init, !0);
         Down(init)
     }
+
+    /// Iterator created by [`down(init)`](down)
+    #[derive(Debug, Clone)]
     pub struct Down(usize);
     impl Iterator for Down {
         type Item = usize;
 
         fn next(&mut self) -> Option<usize> {
-            let x = self.0;
-            if x != !0 {
-                self.0 = next_down(x);
-                Some(x)
+            let i = self.0;
+            if i != !0 {
+                self.0 = next_down(i);
+                Some(i)
             } else {
                 None
             }
@@ -147,15 +180,34 @@ pub mod zero_based {
     }
 
     #[inline]
-    pub fn next_up(x: usize) -> usize {
-        x | x.wrapping_add(1)
+    fn next_down(i: usize) -> usize {
+        (i & i.wrapping_add(1)).wrapping_sub(1)
     }
+
+    /// Creates an iterator that yields indices of nodes that need to be updated when updating an
+    /// element in the original array in a zero-based Fenwick tree with `limit_exclusive` elements.
+    ///
+    /// Each output index `i` satisfies `init <= i && i < limit_exclusive` .
+    ///
+    /// # Panics
+    ///
+    /// Panics if the following assumption on input indices does not hold:
+    /// `init < limit_exclusive` .
+    ///
+    /// # Examples
+    ///
+    /// See [module-level example](super).
+    ///
     pub fn up(init: usize, limit_exclusive: usize) -> Up {
+        assert!(init < limit_exclusive);
         Up {
             curr: init,
             limit_exclusive,
         }
     }
+
+    /// Iterator created by [`up(init, limit)`](up)
+    #[derive(Debug, Clone)]
     pub struct Up {
         curr: usize,
         limit_exclusive: usize,
@@ -164,38 +216,19 @@ pub mod zero_based {
         type Item = usize;
 
         fn next(&mut self) -> Option<usize> {
-            let x = self.curr;
-            if x < self.limit_exclusive {
-                self.curr = next_up(x);
-                Some(x)
+            let i = self.curr;
+            if i < self.limit_exclusive {
+                self.curr = next_up(i);
+                Some(i)
             } else {
                 None
             }
         }
     }
 
-    #[cfg(test)]
-    mod tests {
-        use super::{down, up};
-
-        #[test]
-        fn down_boundary() {
-            assert_eq!(down(!0).collect::<Vec<usize>>(), vec![]);
-            assert_eq!(down(0).collect::<Vec<usize>>(), vec![0usize]);
-        }
-
-        #[test]
-        fn up_boundary() {
-            assert_eq!(
-                up(0usize, 0b1111usize).collect::<Vec<usize>>(),
-                vec![0b0usize, 0b1usize, 0b11usize, 0b111usize]
-            );
-            assert_eq!(
-                up(0b100usize, 0b101usize).collect::<Vec<usize>>(),
-                vec![0b100usize]
-            );
-            assert_eq!(up(0b100usize, 0b100usize).collect::<Vec<usize>>(), vec![]);
-        }
+    #[inline]
+    fn next_up(i: usize) -> usize {
+        i | i.wrapping_add(1)
     }
 }
 
