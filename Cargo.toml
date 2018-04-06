@@ -4,11 +4,13 @@ version = "0.1.0"
 authors = ["summivox <summivox@gmail.com>"]
 license = "MIT"
 
-keywords = ["data-structure", "binary-indexed-tree", "bit-indexed-tree", "prefix-sum", "partial-sum"]
+description = "Fenwick tree: data structure that efficiently calculates prefix sums in a changing array of numbers."
+repository = "https://github.com/summivox/fenwick.rs"
+
+keywords = ["bit", "binary", "tree", "prefix", "sum"]
 categories = ["algorithms", "data-structures", "science"]
 
 [dependencies]
-num-traits = "0.2"
 
 [dev-dependencies]
 rand = "0.5.0-pre.0"
