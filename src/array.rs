@@ -1,4 +1,4 @@
-//! Operations on a 1D Fenwick tree stored in a zero-based array/slice (zero-based).
+//! Operations on a 1D Fenwick tree stored in a zero-based slice.
 //!
 //! # Examples
 //!
@@ -42,12 +42,10 @@ use index::zero_based::{down as seq_dn, up as seq_up};
 ///
 /// See [module-level example](self).
 ///
-pub fn update<TValue, TArray>(fenwick: &mut TArray, i: usize, delta: TValue)
+pub fn update<T>(fenwick: &mut [T], i: usize, delta: T)
 where
-    TValue: AddAssign + Copy + Default,
-    TArray: AsMut<[TValue]> + ?Sized,
+    T: AddAssign + Copy + Default
 {
-    let fenwick = fenwick.as_mut();
     for ii in seq_up(i, fenwick.len()) {
         fenwick[ii] += delta;
     }
@@ -66,13 +64,11 @@ where
 ///
 /// See [module-level example](self).
 ///
-pub fn prefix_sum<TValue, TArray>(fenwick: &TArray, i: usize) -> TValue
+pub fn prefix_sum<T>(fenwick: &[T], i: usize) -> T
 where
-    TValue: AddAssign + Copy + Default,
-    TArray: AsRef<[TValue]> + ?Sized,
+    T: AddAssign + Copy + Default
 {
-    let fenwick = fenwick.as_ref();
-    let mut sum = TValue::default();
+    let mut sum = T::default();
     for ii in seq_dn(i) {
         sum += fenwick[ii];
     }
