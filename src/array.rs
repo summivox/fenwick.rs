@@ -1,4 +1,4 @@
-//! Operations on a 1D Fenwick tree stored in a zero-based slice.
+//! Operations on an 1D Fenwick tree stored in a zero-based slice.
 //!
 //! # Examples
 //!
@@ -28,7 +28,7 @@
 
 use std::ops::AddAssign;
 
-use index::zero_based::{down as seq_dn, up as seq_up};
+use crate::index::zero_based::{down as seq_dn, up as seq_up};
 
 /// Updates one element in the Fenwick tree stored in a borrowed slice (zero-based).
 ///

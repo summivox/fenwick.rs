@@ -1,6 +1,7 @@
 [package]
 name = "fenwick"
-version = "0.2.0"
+version = "1.0.0"
+edition = "2018"
 authors = ["summivox <summivox@gmail.com>"]
 
 description = "Fenwick tree: data structure that efficiently calculates prefix sums in a changing array of numbers."

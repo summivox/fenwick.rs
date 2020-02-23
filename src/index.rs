@@ -60,26 +60,16 @@ pub mod one_based {
     ///
     /// See [module-level example](super).
     ///
-    pub fn down(init: usize) -> Down {
+    pub fn down(init: usize) -> impl Iterator<Item = usize> {
         assert!(1 <= init);
-        Down(init)
-    }
-
-    /// Iterator created by [`down(init)`](down)
-    #[derive(Debug, Clone)]
-    pub struct Down(usize);
-    impl Iterator for Down {
-        type Item = usize;
-
-        fn next(&mut self) -> Option<usize> {
-            let i = self.0;
-            if i != 0 {
-                self.0 = next_down(i);
-                Some(i)
+        std::iter::successors(Some(init), move |&i| {
+            let next = next_down(i);
+            if next > 0 {
+                Some(next)
             } else {
                 None
             }
-        }
+        })
     }
 
     #[inline]
@@ -104,34 +94,18 @@ pub mod one_based {
     ///
     /// See [module-level example](super).
     ///
-    pub fn up(init: usize, limit_inclusive: usize) -> Up {
+    pub fn up(init: usize, limit_inclusive: usize) -> impl Iterator<Item = usize> {
         assert!(1 <= init);
         assert!(init <= limit_inclusive);
         assert!(limit_inclusive <= (usize::max_value() >> 1));
-        Up {
-            curr: init,
-            limit_inclusive,
-        }
-    }
-
-    /// Iterator created by [`up(init, limit)`](up)
-    #[derive(Debug, Clone)]
-    pub struct Up {
-        curr: usize,
-        limit_inclusive: usize,
-    }
-    impl Iterator for Up {
-        type Item = usize;
-
-        fn next(&mut self) -> Option<usize> {
-            let i = self.curr;
-            if i <= self.limit_inclusive {
-                self.curr = next_up(i);
-                Some(i)
+        std::iter::successors(Some(init), move |&i| {
+            let next = next_up(i);
+            if next <= limit_inclusive {
+                Some(next)
             } else {
                 None
             }
-        }
+        })
     }
 
     #[inline]
@@ -157,26 +131,12 @@ pub mod zero_based {
     ///
     /// See [module-level example](super).
     ///
-    pub fn down(init: usize) -> Down {
+    pub fn down(init: usize) -> impl Iterator<Item = usize> {
         assert_ne!(init, !0);
-        Down(init)
-    }
-
-    /// Iterator created by [`down(init)`](down)
-    #[derive(Debug, Clone)]
-    pub struct Down(usize);
-    impl Iterator for Down {
-        type Item = usize;
-
-        fn next(&mut self) -> Option<usize> {
-            let i = self.0;
-            if i != !0 {
-                self.0 = next_down(i);
-                Some(i)
-            } else {
-                None
-            }
-        }
+        std::iter::successors(Some(init), move |&i| {
+            let next = next_down(i);
+            if next != !0 { Some(next) } else { None }
+        })
     }
 
     #[inline]
@@ -198,32 +158,12 @@ pub mod zero_based {
     ///
     /// See [module-level example](super).
     ///
-    pub fn up(init: usize, limit_exclusive: usize) -> Up {
+    pub fn up(init: usize, limit_exclusive: usize) -> impl Iterator<Item = usize> {
         assert!(init < limit_exclusive);
-        Up {
-            curr: init,
-            limit_exclusive,
-        }
-    }
-
-    /// Iterator created by [`up(init, limit)`](up)
-    #[derive(Debug, Clone)]
-    pub struct Up {
-        curr: usize,
-        limit_exclusive: usize,
-    }
-    impl Iterator for Up {
-        type Item = usize;
-
-        fn next(&mut self) -> Option<usize> {
-            let i = self.curr;
-            if i < self.limit_exclusive {
-                self.curr = next_up(i);
-                Some(i)
-            } else {
-                None
-            }
-        }
+        std::iter::successors(Some(init), move |&i| {
+            let next = next_up(i);
+            if next < limit_exclusive { Some(next) } else { None }
+        })
     }
 
     #[inline]
