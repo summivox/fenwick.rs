@@ -62,7 +62,7 @@ pub mod one_based {
     ///
     pub fn down(init: usize) -> impl Iterator<Item = usize> {
         assert!(1 <= init);
-        std::iter::successors(Some(init), move |&i| {
+        core::iter::successors(Some(init), move |&i| {
             let next = next_down(i);
             if next > 0 {
                 Some(next)
@@ -97,8 +97,8 @@ pub mod one_based {
     pub fn up(init: usize, limit_inclusive: usize) -> impl Iterator<Item = usize> {
         assert!(1 <= init);
         assert!(init <= limit_inclusive);
-        assert!(limit_inclusive <= (usize::max_value() >> 1));
-        std::iter::successors(Some(init), move |&i| {
+        assert!(limit_inclusive <= (usize::MAX >> 1));
+        core::iter::successors(Some(init), move |&i| {
             let next = next_up(i);
             if next <= limit_inclusive {
                 Some(next)
@@ -133,7 +133,7 @@ pub mod zero_based {
     ///
     pub fn down(init: usize) -> impl Iterator<Item = usize> {
         assert_ne!(init, !0);
-        std::iter::successors(Some(init), move |&i| {
+        core::iter::successors(Some(init), move |&i| {
             let next = next_down(i);
             if next != !0 { Some(next) } else { None }
         })
@@ -160,7 +160,7 @@ pub mod zero_based {
     ///
     pub fn up(init: usize, limit_exclusive: usize) -> impl Iterator<Item = usize> {
         assert!(init < limit_exclusive);
-        std::iter::successors(Some(init), move |&i| {
+        core::iter::successors(Some(init), move |&i| {
             let next = next_up(i);
             if next < limit_exclusive { Some(next) } else { None }
         })
@@ -174,56 +174,63 @@ pub mod zero_based {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    extern crate std;
+    use itertools::Itertools;
+
     #[test]
     fn down_example() {
-        let init_one = 0b1101110101011010000usize;
-        let ans_one = vec![
-            0b1101110101011010000usize,
-            0b1101110101011000000usize,
-            0b1101110101010000000usize,
-            0b1101110101000000000usize,
-            0b1101110100000000000usize,
-            0b1101110000000000000usize,
-            0b1101100000000000000usize,
-            0b1101000000000000000usize,
-            0b1100000000000000000usize,
-            0b1000000000000000000usize,
+        let init_one =
+            0b1101110101011010000;
+        let ans_one = std::vec![
+            0b1101110101011010000,
+            0b1101110101011000000,
+            0b1101110101010000000,
+            0b1101110101000000000,
+            0b1101110100000000000,
+            0b1101110000000000000,
+            0b1101100000000000000,
+            0b1101000000000000000,
+            0b1100000000000000000,
+            0b1000000000000000000,
         ];
 
         assert_eq!(
-            super::one_based::down(init_one).collect::<Vec<usize>>(),
+            one_based::down(init_one).collect_vec(),
             ans_one
         );
         assert_eq!(
-            super::zero_based::down(init_one - 1)
+            zero_based::down(init_one - 1)
                 .map(|x| x + 1)
-                .collect::<Vec<usize>>(),
+                .collect_vec(),
             ans_one
         );
     }
 
     #[test]
     fn up_example() {
-        let init_one = 0b1101110101011010000usize;
-        let limit = 0b100000000000000000000usize;
-        let ans_one = vec![
-            0b001101110101011010000usize,
-            0b001101110101011100000usize,
-            0b001101110101100000000usize,
-            0b001101110110000000000usize,
-            0b001101111000000000000usize,
-            0b001110000000000000000usize,
-            0b010000000000000000000usize,
-            0b100000000000000000000usize,
+        let init_one =
+            0b001101110101011010000;
+        let limit =
+            0b100000000000000000000;
+        let ans_one = std::vec![
+            0b001101110101011010000,
+            0b001101110101011100000,
+            0b001101110101100000000,
+            0b001101110110000000000,
+            0b001101111000000000000,
+            0b001110000000000000000,
+            0b010000000000000000000,
+            0b100000000000000000000,
         ];
         assert_eq!(
-            super::one_based::up(init_one, limit).collect::<Vec<usize>>(),
+            one_based::up(init_one, limit).collect_vec(),
             ans_one
         );
         assert_eq!(
-            super::zero_based::up(init_one - 1, limit)
+            zero_based::up(init_one - 1, limit)
                 .map(|x| x + 1)
-                .collect::<Vec<usize>>(),
+                .collect_vec(),
             ans_one
         );
     }

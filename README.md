@@ -7,11 +7,11 @@ that supports the following two operations efficiently over an array of numbers 
 With a naïve implementation, only one of the operations can be made to have constant time
 complexity while the other one has to be linear. With Fenwick tree, both take only `O(log(N))`.
 
+This crate is `no_std` and has no (non-dev) dependencies.
+
 [wiki]: https://en.wikipedia.org/wiki/Fenwick_tree
 
 # Examples
-
-<!-- REMEMBER TO UPDATE THIS FROM `src/array.rs` -->
 
 Use the `array` module for operations on a 1D Fenwick tree:
 
@@ -36,10 +36,11 @@ assert_eq!(prefix_sum(fw, 4), -4);
 assert_eq!(prefix_sum(fw, 5), 5);
 ```
 
-Use the `index` module to implement multi-dimensional Fenwick trees:
+Use the `index` module to implement multidimensional Fenwick trees:
 
 ```rust
 use fenwick::index::zero_based::{down, up};
+const MAX: usize = 1000;
 
 fn update(i: usize, j: usize, k: usize, delta: i32) {
     for ii in up(i, MAX) {
@@ -63,3 +64,9 @@ fn prefix_sum(i: usize, j: usize, k: usize) -> i32 {
     sum
 }
 ```
+
+# References
+
+* [Original Paper](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.14.8917)
+* [Tutorial on Topcoder](https://www.topcoder.com/community/data-science/data-science-tutorials/binary-indexed-trees/)
+

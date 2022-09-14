@@ -24,9 +24,7 @@
 //! ```
 //!
 
-// NOTE: example above used in `README`
-
-use std::ops::AddAssign;
+use core::ops::AddAssign;
 
 use crate::index::zero_based::{down as seq_dn, up as seq_up};
 
@@ -77,39 +75,38 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::ops::AddAssign;
-    use rand::{thread_rng, Rng, distributions::{Distribution, Range}};
+    use super::*;
+    extern crate std;
 
-    fn partial_sum_scanner<T>(s: &mut T, x: &T) -> Option<T>
-    where
-        T: AddAssign + Copy,
-    {
-        *s += *x;
-        Some(*s)
-    }
+    use itertools::Itertools;
+    use rand::prelude::*;
 
     #[test]
     fn randoms() {
         let mut rng = thread_rng();
-        for len in 0..130usize {
+        for len in 0..256 {
             random_one(&mut rng, len);
         }
     }
+
     fn random_one<TRng: Rng>(rng: &mut TRng, len: usize) {
-        let mut data = vec![0i32; len];
-        let range = Range::new_inclusive(-50, 50);
-        for x in data.iter_mut() {
-            *x = range.sample(rng);
+        let dist = rand::distributions::Uniform::new_inclusive(-100, 100);
+        let data = rng.sample_iter(dist).take(len).collect_vec();
+        let psum = data.iter().scan(0, |s, x| {
+            *s += x;
+            Some(*s)
+        }).collect_vec();
+
+        let mut fenwick = std::vec![0i32; len];
+
+        let mut ops = data.iter().enumerate().collect_vec();
+        ops.shuffle(rng);
+        for (i, x) in ops {
+            update(&mut fenwick, i, *x);
         }
-        let psum: Vec<i32> = data.iter().scan(0i32, partial_sum_scanner).collect();
-        let mut fenwick = vec![0i32; data.len()];
-        {
-            for (i, x) in data.iter().enumerate() {
-                super::update(&mut fenwick, i, *x);
-            }
-        }
+
         for (i, s) in psum.iter().enumerate() {
-            assert_eq!(super::prefix_sum(&fenwick, i), *s);
+            assert_eq!(prefix_sum(&fenwick, i), *s);
         }
     }
 }
